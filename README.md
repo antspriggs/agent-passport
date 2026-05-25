@@ -203,6 +203,7 @@ or version range (e.g. `nist-agent-passport>=0.1,<0.2`).
   deprecated APIs and their planned removal versions.
 
 Governance: see [GOVERNANCE.md](https://github.com/antspriggs/nist-agent-passport/blob/main/GOVERNANCE.md).
+Candidate next steps: see [ROADMAP.md](https://github.com/antspriggs/nist-agent-passport/blob/main/ROADMAP.md).
 
 ## Development
 
