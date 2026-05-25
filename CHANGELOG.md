@@ -6,6 +6,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [0.1.1] — 2026-05-24
+
+### Fixed
+
+- **README links broken on PyPI.** Relative Markdown links (`./CLAUDE.md`,
+  `./CONTRIBUTING.md`, `examples/quickstart.py`, …) rendered as dead
+  links on the PyPI project page because PyPI doesn't resolve relative
+  paths from a README. Rewritten to absolute `https://github.com/...`
+  URLs that resolve correctly on both PyPI and GitHub.
+
 ### Added
 
 - **`GOVERNANCE.md`** — documents the BDFL model (@antspriggs is current
@@ -17,7 +29,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   one minor-version notice and CHANGELOG lists them explicitly. SemVer
   2.0.0 throughout.
 - **CycloneDX SBOM per release** — `release.yml` now generates a
-  CycloneDX 1.6 JSON SBOM against the resolved dependency tree of the
+  CycloneDX JSON SBOM against the resolved dependency tree of the
   just-built wheel and uploads it as a GitHub Release asset (filename:
   `nist-agent-passport-{version}.cdx.json`).
 
