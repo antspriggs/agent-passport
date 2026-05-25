@@ -6,7 +6,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-_No changes yet._
+### Added
+
+- **Release-from-main invariant enforced by the release workflow.**
+  `release.yml` now refuses to publish if the tagged commit is not
+  reachable from `origin/main` — guards against tagging an unmerged
+  commit. Combined with the existing `main` branch protection
+  (PRs required, admin-enforced) and a new `pypi` environment
+  deployment-branches policy (restricts deploys to `v*` tag refs),
+  every PyPI artifact corresponds to a PR-reviewed, CI-green,
+  on-`main` commit, approved at deploy time. Documented in
+  `GOVERNANCE.md` under "Release policy".
 
 ## [0.1.1] — 2026-05-24
 
