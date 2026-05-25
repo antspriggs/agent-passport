@@ -6,7 +6,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-_No changes yet._
+### Added
+
+- **`ROADMAP.md`** — indexes candidate next steps with rationale and
+  rough effort: engage NIST AI Agent Standards Initiative, second-CSP
+  validation (Login.gov / Auth0 / Keycloak), token revocation (RFC 7662),
+  JWKS hosting + rotation, full browser-OAuth integration test, CLI PII
+  redaction, Go + TypeScript SDKs, and the 1.0 prep checklist. README
+  links to it.
 
 ## [0.1.2] — 2026-05-25
 
