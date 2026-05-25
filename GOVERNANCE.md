@@ -90,6 +90,29 @@ bad faith, contributors can:
 This is intentionally lightweight. The project is small enough that
 forking is the right escalation if leadership fails.
 
+## Release policy
+
+Releases follow a strict PR-merged-only invariant. The chain:
+
+1. **Every change to `main` must arrive via PR**, with all CI status
+   checks green, branch up-to-date, conversations resolved. Branch
+   protection enforces this even for admins (`enforce_admins: true`).
+2. **Linear history required** — `main` accepts squash or rebase merges
+   only, never merge commits.
+3. **Release tags (`v*`) must point at commits on `main`.** Two
+   independent enforcement mechanisms:
+   - The `release.yml` workflow's `Verify release commit is reachable
+     from main` step refuses to publish if `GITHUB_SHA` is not an
+     ancestor of `origin/main`.
+   - The `pypi` GitHub Actions environment's deployment-branches policy
+     restricts deployments to `v*` tag refs only.
+4. **The release deployment itself requires manual approval** by a
+   reviewer registered on the `pypi` environment (currently the BDFL).
+
+A release that fails any of these is not published. This means: every
+artifact on PyPI corresponds to a PR-reviewed, CI-green, on-`main`
+commit, approved at deploy time.
+
 ## Versioning and deprecation
 
-See [README.md](./README.md#versioning--deprecation-policy).
+See [README.md](https://github.com/antspriggs/nist-agent-passport/blob/main/README.md#versioning--deprecation-policy).
