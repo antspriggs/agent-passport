@@ -28,7 +28,7 @@ pip install nist-agent-passport
 The install registers a `nist-agent-passport` console script.
 
 For local development (running the test suite, editing source), see
-[CONTRIBUTING.md](./CONTRIBUTING.md) for the editable-install instructions.
+[CONTRIBUTING.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CONTRIBUTING.md) for the editable-install instructions.
 
 ## Quickstart
 
@@ -106,10 +106,10 @@ nist-agent-passport issue ... | nist-agent-passport delegate --aud ... --agent-i
 
 | File | What it shows |
 |---|---|
-| [`examples/quickstart.py`](examples/quickstart.py) | The full loop: login → issue → verify, plus two failure-mode demos (`AudienceMismatch`, `IALInsufficient`). |
-| [`examples/multi_agent_chain.py`](examples/multi_agent_chain.py) | Alice → Bob → Carol delegation; the leaf service walks the full chain, re-checking attenuation and IAL monotonicity; prints the delegation tree. |
-| [`examples/mcp_middleware.py`](examples/mcp_middleware.py) | A `PassportMiddleware` class that wraps a tool dispatcher, enforces per-tool `required_scope`, and shows defense-in-depth refusal of overbroad and wrong-audience tokens. Drop-in pattern for MCP servers. |
-| [`examples/langchain_tool_wrapper.py`](examples/langchain_tool_wrapper.py) | A `PassportProtectedTool` shape-compatible with `langchain_core.tools.BaseTool`. Demonstrates scope enforcement and signature-tamper detection. |
+| [`examples/quickstart.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/quickstart.py) | The full loop: login → issue → verify, plus two failure-mode demos (`AudienceMismatch`, `IALInsufficient`). |
+| [`examples/multi_agent_chain.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/multi_agent_chain.py) | Alice → Bob → Carol delegation; the leaf service walks the full chain, re-checking attenuation and IAL monotonicity; prints the delegation tree. |
+| [`examples/mcp_middleware.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/mcp_middleware.py) | A `PassportMiddleware` class that wraps a tool dispatcher, enforces per-tool `required_scope`, and shows defense-in-depth refusal of overbroad and wrong-audience tokens. Drop-in pattern for MCP servers. |
+| [`examples/langchain_tool_wrapper.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/langchain_tool_wrapper.py) | A `PassportProtectedTool` shape-compatible with `langchain_core.tools.BaseTool`. Demonstrates scope enforcement and signature-tamper detection. |
 
 Every example runs from a clean checkout against the hermetic in-process mock OIDC provider — no external creds needed:
 
@@ -186,7 +186,7 @@ The project follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.h
 
 **While in `0.y.z` (alpha)** — any release MAY contain breaking changes.
 Breaking changes are flagged under `### Changed (breaking)` in
-[CHANGELOG.md](./CHANGELOG.md). Adopters should pin a specific version
+[CHANGELOG.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CHANGELOG.md). Adopters should pin a specific version
 or version range (e.g. `nist-agent-passport>=0.1,<0.2`).
 
 **Once `1.0.0` ships:**
@@ -197,12 +197,12 @@ or version range (e.g. `nist-agent-passport>=0.1,<0.2`).
   `2.0.0`, and a feature deprecated in `1.4.0` will continue to work
   (with a `DeprecationWarning`) through every `1.x` release.
 - **Security fixes** may ship as patch releases on supported versions
-  without notice; see [SECURITY.md](./SECURITY.md) for the supported-versions
+  without notice; see [SECURITY.md](https://github.com/antspriggs/nist-agent-passport/blob/main/SECURITY.md) for the supported-versions
   table.
 - The CHANGELOG's `### Deprecated` section is the authoritative list of
   deprecated APIs and their planned removal versions.
 
-Governance: see [GOVERNANCE.md](./GOVERNANCE.md).
+Governance: see [GOVERNANCE.md](https://github.com/antspriggs/nist-agent-passport/blob/main/GOVERNANCE.md).
 
 ## Development
 
@@ -217,7 +217,7 @@ mypy                                       # --strict, covers src/ + tests/
 
 The test suite is fully hermetic (the mock OIDC provider runs in-process on a random port) — no creds or network needed.
 
-See [CLAUDE.md](./CLAUDE.md) for the design context behind every decision in this codebase: the trust model, why each RFC is used, security guardrails, and the suggested order of work.
+See [CLAUDE.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CLAUDE.md) for the design context behind every decision in this codebase: the trust model, why each RFC is used, security guardrails, and the suggested order of work.
 
 ## License
 
