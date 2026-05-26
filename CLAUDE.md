@@ -24,23 +24,29 @@ This project is a deliberate, concrete contribution to the **Agent Identity & Au
 ## Audience and primary deliverable
 
 - **Audience:** developers building AI agent frameworks (LangChain, LlamaIndex, AutoGen, MCP runtimes) who need a drop-in identity/authorization primitive.
-- **Primary deliverable:** an open-source Python library (`agent-passport`) plus a CLI demo and a small set of `examples/`.
+- **Primary deliverable:** an open-source Python library (`csp-agent-passport`) plus a CLI demo and a small set of `examples/`.
 - **Explicitly not in scope (for v0):** a hosted dashboard, a TypeScript SDK, key rotation infrastructure, a production-grade key store. These are deferred until the primitives are right.
 
 ---
 
 ## Naming and endorsement
 
-The PyPI package, Python import, and CLI binary are all named `agent-passport` (snake-case `agent_passport` for imports). They were previously published as `nist-agent-passport` (v0.0.1 → v0.1.x); the v0.2.0 release renamed both.
+The PyPI package, Python import, and CLI binary are all named `csp-agent-passport` (snake-case `csp_agent_passport` for imports). The "CSP" prefix is NIST SP 800-63 terminology for **Credential Service Provider** — accurate to this project's substrate role (it consumes a CSP's OIDC assertion and mints delegation tokens from it) without claiming NIST endorsement.
 
 [NIST's published policy](https://www.nist.gov/open/license) forbids implying NIST approves or endorses any product, and a `nist-` prefix from a non-NIST author crosses that line. There is no formal NIST endorsement of this library — the alignment with the [NCCOE Software and AI Agent Identity and Authorization](https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization) concept paper, RFC 8693, and SP 800-63-3 is genuine and is claimed in prose, not in the package name.
 
-Existing users upgrading from `nist-agent-passport` v0.1.x:
-- Imports change: `from nist_agent_passport import ...` → `from agent_passport import ...`.
-- CLI command changes: `nist-agent-passport …` → `agent-passport …`.
-- XDG state migrates automatically: on first run, if `$XDG_DATA_HOME/nist-agent-passport/` exists and `$XDG_DATA_HOME/agent-passport/` does not, the directory is renamed in place — preserving the issuer signing key and ID-token state (see `_storage.py`).
-- The namespaced claim URI `https://agent-passport.org/claims/*` was always unprefixed and is wire-compatible across the rename — **no token-shape change**.
-- The GitHub repository URL is unchanged at https://github.com/antspriggs/nist-agent-passport. A repo rename is a separate decision (URL stability matters for inbound links).
+**Rename history** (see CHANGELOG for full details):
+- **v0.0.1**: `agent-passport` — first public alpha.
+- **v0.1.0**: renamed to `nist-agent-passport` — intended to signal NIST 800-63 lineage; later found to overclaim per the policy above.
+- **v0.2.0**: renamed back to `agent-passport`. **Never released to PyPI** — the project name turned out to be unobtainable (PyPI similarity check vs. `agent-passport-system`).
+- **v0.2.1**: renamed to `csp-agent-passport`. First PyPI release under the new name. GitHub repository renamed at the same time (URL: https://github.com/antspriggs/csp-agent-passport; GitHub serves permanent redirects on the previous URL).
+
+**Existing users upgrading from any prior name:**
+- Imports: `from nist_agent_passport import ...` or `from agent_passport import ...` → `from csp_agent_passport import ...`.
+- CLI: `nist-agent-passport ...` or `agent-passport ...` → `csp-agent-passport ...`.
+- XDG state auto-migrates: on first run, `_storage.xdg_data_dir()` checks for both legacy directories (`$XDG_DATA_HOME/agent-passport/` then `$XDG_DATA_HOME/nist-agent-passport/`) and renames whichever exists to `$XDG_DATA_HOME/csp-agent-passport/`. The current dir is never clobbered if it already exists. Five tests in `tests/test_storage_migration.py` cover the chain.
+- The namespaced claim URI `https://agent-passport.org/claims/*` was always unprefixed — **wire-compatible across every rename in this project's history**. No token-shape change.
+- Local git remotes: `git remote set-url origin https://github.com/antspriggs/csp-agent-passport.git`.
 
 ---
 
@@ -173,7 +179,7 @@ CSP_SCOPES="openid ..."                          # space-separated per OIDC; ver
 CSP_ACR_MAPPING=ial                              # ial (default) | pkg.module:func_name
 ```
 
-**ACR mapping (`acr` → `AssuranceLevels`):** implemented as `ial_acr_mapping` in `src/agent_passport/oidc/base.py`. Single function + a translation table — read it in one screen, audit it in two minutes. Handles:
+**ACR mapping (`acr` → `AssuranceLevels`):** implemented as `ial_acr_mapping` in `src/csp_agent_passport/oidc/base.py`. Single function + a translation table — read it in one screen, audit it in two minutes. Handles:
 - The canonical NIST 800-63-3 `http://idmanagement.gov/ns/assurance/ial/N` URIs (for N in 1–3).
 - The legacy IAF `…/loa/1` and `…/loa/3` URIs some CSPs still emit, translated conservatively: `…/loa/3` → IAL-2 (documents proofed + MFA), **not** IAL-3 (which requires in-person supervised proofing). A downstream verifier with `require_ial=3` therefore correctly rejects legacy LOA-3 tokens.
 
@@ -194,21 +200,21 @@ Lives in `tests/fixtures/mock_oidc/`. Uses an ephemeral RSA keypair generated at
 ## CLI surface
 
 ```
-agent-passport login                 # runs the OIDC dance against the configured CSP, stores ID token locally
-agent-passport issue                 # mints a delegation token from the stored ID token
+csp-agent-passport login                 # runs the OIDC dance against the configured CSP, stores ID token locally
+csp-agent-passport issue                 # mints a delegation token from the stored ID token
     --agent-id <id>
     --agent-model <model>
     --tool-scope <pattern>           # repeatable
     --task-purpose <string>
     --aud <audience>
     --ttl <seconds>                  # default 900
-agent-passport verify <token>        # validates signature/expiry/scope; prints VerifiedPassport
+csp-agent-passport verify <token>        # validates signature/expiry/scope; prints VerifiedPassport
     --require-ial <n>
     --require-aal <n>
     --aud <audience>
     --required-scope <pattern>
-agent-passport inspect <token>       # decodes and pretty-prints all claims, including the chain
-agent-passport delegate <token>      # mints a child token; --tool-scope must be a subset
+csp-agent-passport inspect <token>       # decodes and pretty-prints all claims, including the chain
+csp-agent-passport delegate <token>      # mints a child token; --tool-scope must be a subset
     --agent-id <id>
     --tool-scope <pattern>
     --ttl <seconds>                  # default 300
@@ -233,14 +239,14 @@ Examples should be runnable standalone, with comments that explain the standards
 ## Project layout
 
 ```
-agent-passport/
+csp-agent-passport/
 ├── pyproject.toml
 ├── README.md                  # public-facing: rationale, quickstart, NIST refs
 ├── CLAUDE.md                  # this file
 ├── .env.example
 ├── .gitignore                 # excludes .env, *.pem, dist/, etc.
 ├── src/
-│   └── agent_passport/
+│   └── csp_agent_passport/
 │       ├── __init__.py
 │       ├── claims.py          # Pydantic models for the token claim schema
 │       ├── issuer.py          # token-exchange logic
@@ -278,7 +284,7 @@ pip install -e '.[dev]'
 pytest
 
 # run tests with coverage
-pytest --cov=agent_passport --cov-report=term-missing
+pytest --cov=csp_agent_passport --cov-report=term-missing
 
 # lint and format
 ruff check .
@@ -288,7 +294,7 @@ ruff format .
 mypy src/
 
 # run the CLI from source
-python -m agent_passport --help
+python -m csp_agent_passport --help
 ```
 
 Use Python 3.11+. Use Pydantic v2. Use `joserfc` for JWT/JOSE handling (single dependency, JWS + JWK + JWT in one place; ships `py.typed`; the modern successor to `authlib.jose`, written by the same author — do not pull in `authlib` or `pyjwt`). Use `httpx` for HTTP. Use `Typer` for the CLI (better ergonomics than Click for typed commands).

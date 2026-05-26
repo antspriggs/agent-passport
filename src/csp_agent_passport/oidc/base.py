@@ -11,7 +11,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from agent_passport.errors import UnsupportedAcr
+from csp_agent_passport.errors import UnsupportedAcr
 
 
 @dataclass(frozen=True)

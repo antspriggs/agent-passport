@@ -1,6 +1,6 @@
 # Maintainers
 
-This file lists the people with merge authority on `agent-passport`.
+This file lists the people with merge authority on `csp-agent-passport`.
 It is the authoritative record — if a name isn't here, that person doesn't
 have decision-making authority over the project.
 

@@ -36,12 +36,12 @@ this is the moment to engage.
    the specific NIST SP 800-63-3 / RFC 8693 / OIDC clauses it implements,
    plus the NCCOE concept paper's four focus areas (Identification &
    Authentication, Authorization, Access Delegation, Logging &
-   Transparency). Material exists in [CLAUDE.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CLAUDE.md);
+   Transparency). Material exists in [CLAUDE.md](https://github.com/antspriggs/csp-agent-passport/blob/main/CLAUDE.md);
    needs distillation for a non-implementer audience.
 2. **Introductory email to `AI-Identity@nist.gov`** — the live mailbox
    for the NCCOE project team. Accepts unsolicited input between formal
    windows. The v0.2.0 rename (from `nist-agent-passport` to
-   `agent-passport`) was a prerequisite — sending NIST a project named
+   `csp-agent-passport`) was a prerequisite — sending NIST a project named
    after them was the awkward case to avoid.
 3. **File a Letter of Interest** when the Federal Register Notice for
    NCCOE collaborators drops. Offer Agent Passport as a reference
@@ -193,7 +193,7 @@ without committing to SPIFFE.
 ### Chain visualization in `inspect`
 
 **Value:** the delegation chain (`act` + `parent_jti`) is already in the
-token; `agent-passport inspect --tree` would render it as a
+token; `csp-agent-passport inspect --tree` would render it as a
 human-readable tree (depth, agent_id per hop, IAL at each link, scope
 delta from parent). Pure CLI sugar over existing data.
 
@@ -217,7 +217,7 @@ revocation today; this is the gap that most reduces the asymmetry.
   returns `active: true/false` + claim metadata.
 
 **Status:** designed; significant implementation effort; flagged in
-[CHANGELOG.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CHANGELOG.md)
+[CHANGELOG.md](https://github.com/antspriggs/csp-agent-passport/blob/main/CHANGELOG.md)
 Known Limitations since v0.0.1.
 
 ### JWKS hosting and key rotation
@@ -254,7 +254,7 @@ would let us test the full dance hermetically in CI on every PR.
 
 ### CLI PII redaction in `inspect`
 
-**Value:** the ID.me integration revealed that `agent-passport
+**Value:** the ID.me integration revealed that `csp-agent-passport
 inspect` happily prints legal names, emails, residential addresses, etc.
 when the ID token carries them. For a tool people will run in shared
 terminals (or paste into shared chats), default-redact-with-opt-in is
@@ -314,7 +314,7 @@ adopt consensus claim names as they emerge rather than minting our own.
 
 ### Adjacent open-source projects
 
-Honest positioning context. See [COMPARISON.md](https://github.com/antspriggs/nist-agent-passport/blob/main/COMPARISON.md)
+Honest positioning context. See [COMPARISON.md](https://github.com/antspriggs/csp-agent-passport/blob/main/COMPARISON.md)
 for the longer write-up.
 
 - [ZeroID (highflame-ai/zeroid)](https://github.com/highflame-ai/zeroid)
@@ -338,7 +338,7 @@ for the longer write-up.
 **Value:** multi-language coverage is table stakes for adoption in the
 broader AI-agent ecosystem (most agent frameworks are split across
 Python and TypeScript today). The other "agent passport" projects in
-the namespace (cezexPL/agent-passport-standard, aeoess/agent-passport-system)
+the namespace (cezexPL/csp-agent-passport-standard, aeoess/agent-passport-system)
 already offer multi-language SDKs; we should match.
 
 **Approach:** keep this Python implementation as the reference; auto-
@@ -357,7 +357,7 @@ requires:
 1. **Wire-format freeze** — pin the claim schema; document any extension
    points that adopters can rely on not breaking.
 2. **Deprecation discipline** — every breaking change after 1.0 needs at
-   least one minor-version notice per the [Versioning policy](https://github.com/antspriggs/nist-agent-passport/blob/main/README.md#versioning--deprecation-policy).
+   least one minor-version notice per the [Versioning policy](https://github.com/antspriggs/csp-agent-passport/blob/main/README.md#versioning--deprecation-policy).
 3. **Adoption signal** — at least one external user / integration / test
    confirming the API is usable as documented.
 4. **Security review** — an external reviewer (NIST/NCCOE, OpenID
@@ -371,7 +371,7 @@ arrives.
 ## How to contribute to any of these
 
 Pick one, open an issue describing your intended approach, then a PR
-per [CONTRIBUTING.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CONTRIBUTING.md).
+per [CONTRIBUTING.md](https://github.com/antspriggs/csp-agent-passport/blob/main/CONTRIBUTING.md).
 For larger items (revocation, JWKS hosting, second SDK), discuss in
 the issue before writing code — the design space matters more than
 the implementation.

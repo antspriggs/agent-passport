@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tests" / "fixtu
 
 from mock_oidc import MockOIDCProvider
 
-from agent_passport import (
+from csp_agent_passport import (
     DelegationRequest,
     IDTokenValidator,
     InMemoryKeyStore,
@@ -47,7 +47,7 @@ from agent_passport import (
     ial_acr_mapping,
 )
 
-CLIENT_ID = "agent-passport-issuer"
+CLIENT_ID = "csp-agent-passport-issuer"
 ACR_IAL2 = "http://idmanagement.gov/ns/assurance/ial/2"
 SVC_A = "https://service-a.example.com/"
 SVC_B = "https://service-b.example.com/"

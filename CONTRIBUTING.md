@@ -11,8 +11,8 @@ can agree on direction before code review.
 Requires Python 3.11+.
 
 ```bash
-git clone https://github.com/antspriggs/nist-agent-passport.git
-cd agent-passport
+git clone https://github.com/antspriggs/csp-agent-passport.git
+cd csp-agent-passport
 pip install -e '.[dev]'
 ```
 
@@ -23,7 +23,7 @@ ruff check .                      # lint
 ruff format --check .             # format
 mypy                              # --strict on src/ + tests/
 pytest                            # hermetic test suite
-pytest --cov=agent_passport       # with coverage
+pytest --cov=csp_agent_passport       # with coverage
 ```
 
 All four must pass before opening a PR. CI runs the same set across Python

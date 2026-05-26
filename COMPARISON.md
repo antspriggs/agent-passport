@@ -115,7 +115,7 @@ identifiers can join cleanly.
 
 You wouldn't replace SPIFFE with Agent Passport, or vice versa.
 
-## Other projects in the "agent-passport" namespace
+## Other projects in the "csp-agent-passport" namespace
 
 The name "agent passport" is somewhat parallel-discovered. Worth knowing
 about:
@@ -130,12 +130,12 @@ about:
   commits, 1 star). **The name "Agent Passport" is trademarked by this
   org**; this is a real consideration before doing any branding
   investment.
-- **[cezexPL/agent-passport-standard](https://github.com/cezexPL/agent-passport-standard)**
+- **[cezexPL/csp-agent-passport-standard](https://github.com/cezexPL/csp-agent-passport-standard)**
   — Spec-stage; provenance + blockchain anchoring; custom wire format.
 
-This project ([antspriggs/nist-agent-passport](https://github.com/antspriggs/nist-agent-passport))
+This project ([antspriggs/csp-agent-passport](https://github.com/antspriggs/csp-agent-passport))
 is the OIDC + RFC 8693 + NIST SP 800-63 implementation. The PyPI package
-is `agent-passport` (renamed from `nist-agent-passport` in v0.2.0 — see
+is `csp-agent-passport` (renamed from `nist-agent-passport` in v0.2.0 — see
 the [Naming and endorsement](CLAUDE.md#naming-and-endorsement) section
 for why). The GitHub repo URL is retained for inbound-link stability.
 
@@ -197,6 +197,6 @@ maintainer who needs an identity primitive to embed, look here.
 ## Corrections welcome
 
 If you maintain one of the projects above and this writeup gets your
-project wrong, please [open an issue](https://github.com/antspriggs/nist-agent-passport/issues)
+project wrong, please [open an issue](https://github.com/antspriggs/csp-agent-passport/issues)
 or PR. Comparison docs go stale fast; concrete corrections beat
 opinionated guesses.

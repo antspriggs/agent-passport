@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from agent_passport.errors import KeyNotFound
+from csp_agent_passport.errors import KeyNotFound
 
 
 class KeyStore(Protocol):
