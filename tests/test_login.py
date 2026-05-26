@@ -14,7 +14,7 @@ from typing import Any
 import httpx
 import pytest
 
-from agent_passport._login import LoginError, login_local_loopback
+from csp_agent_passport._login import LoginError, login_local_loopback
 
 
 def _stub_get(

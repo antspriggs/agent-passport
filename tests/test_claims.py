@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from agent_passport.claims import (
+from csp_agent_passport.claims import (
     AGENT_PASSPORT_CLAIM_NS,
     ActClaim,
     AgentClaims,

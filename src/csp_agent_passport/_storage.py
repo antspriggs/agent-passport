@@ -6,7 +6,7 @@ Stores three things across invocations:
     stable kid that verifiers can pin).
   - CSP-side bookkeeping (which discovery URL the ID token came from).
 
-Layout (under `$XDG_DATA_HOME/agent-passport/`, or `~/.local/share/agent-passport/`):
+Layout (under `$XDG_DATA_HOME/csp-agent-passport/`, or `~/.local/share/csp-agent-passport/`):
   id_token                  text file with the raw compact JWS
   id_token_meta.json        {"discovery_url": "...", "client_id": "..."}
   issuer_signing_key.json   JWK private-key dict (kty=RSA, includes d/p/q/...)
@@ -24,22 +24,32 @@ from pathlib import Path
 
 from joserfc.jwk import RSAKey
 
-_DIR_NAME = "agent-passport"
-_LEGACY_DIR_NAME = "nist-agent-passport"  # pre-v0.2.0; auto-migrated below.
+_DIR_NAME = "csp-agent-passport"
+
+# Auto-migrated below, newest-legacy-first. The v0.2.0 `agent-passport` name
+# never shipped on PyPI (PyPI rejected it for similarity to other projects),
+# but local developers may have populated that dir while v0.2.0 was on main.
+_LEGACY_DIR_NAMES: tuple[str, ...] = ("agent-passport", "nist-agent-passport")
 
 
 def xdg_data_dir() -> Path:
-    """Return `$XDG_DATA_HOME/agent-passport`, creating it if missing.
+    """Return `$XDG_DATA_HOME/csp-agent-passport`, creating it if missing.
 
-    If the legacy `nist-agent-passport` directory exists (from before the
-    v0.2.0 package rename) and the new one does not, migrate by renaming —
-    preserving the issuer signing key and any stored ID token in place.
+    Auto-migrates legacy directories from earlier package names — preserves
+    the issuer signing key and any stored ID token in place. Tries the newer
+    legacy name (`agent-passport`, v0.2.0) before the older one
+    (`nist-agent-passport`, v0.0.1-v0.1.x); first existing legacy is renamed
+    to the current `csp-agent-passport`. Does nothing if the current dir
+    already exists (never clobbers).
     """
     base = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
     new = Path(base) / _DIR_NAME
-    legacy = Path(base) / _LEGACY_DIR_NAME
-    if legacy.exists() and not new.exists():
-        legacy.rename(new)
+    if not new.exists():
+        for legacy_name in _LEGACY_DIR_NAMES:
+            legacy = Path(base) / legacy_name
+            if legacy.exists():
+                legacy.rename(new)
+                break
     new.mkdir(parents=True, exist_ok=True)
     return new
 
@@ -102,5 +112,5 @@ def load_or_create_issuer_key() -> RSAKey:
 
 
 def issuer_key_path() -> Path:
-    """Public accessor for inspection / `agent-passport` config commands."""
+    """Public accessor for inspection / `csp-agent-passport` config commands."""
     return _issuer_key_path()

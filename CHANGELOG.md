@@ -6,12 +6,50 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.2.0] — 2026-05-26
+## [0.2.1] — 2026-05-26
 
-Breaking release: package and CLI renamed from `nist-agent-passport` to
-`agent-passport` per NIST endorsement policy. Wire format and claim
-namespace unchanged — tokens issued by v0.1.x verify unchanged against
-v0.2.0 and vice versa.
+The v0.2.0 rename to `agent-passport` could not be claimed on PyPI — the
+similarity check rejected it as too close to the existing `nist-agent-passport`
+and `agent-passport-system` projects. v0.2.1 re-renames to `csp-agent-passport`
+("CSP" per NIST SP 800-63 terminology for Credential Service Provider, which
+accurately describes the project's substrate role without claiming NIST
+endorsement). The GitHub repository was renamed alongside, so `nist-` no longer
+appears in any URL or title. **v0.2.0 was never released to PyPI**; v0.2.1 is
+the first PyPI release under the new name.
+
+### Changed (breaking)
+
+- **Renamed package from `agent-passport` to `csp-agent-passport`.**
+  - Python import path: `agent_passport` → `csp_agent_passport`
+  - PyPI distribution: `agent-passport` → `csp-agent-passport`
+  - CLI binary: `agent-passport` → `csp-agent-passport`
+  - Claim namespace URI **unchanged** at `https://agent-passport.org/claims/`
+    — wire-compatible across every rename in this project's history.
+- **GitHub repository renamed** from `antspriggs/nist-agent-passport` to
+  `antspriggs/csp-agent-passport`. GitHub serves permanent redirects on the
+  old URL; existing inbound links continue to work. Developers with local
+  clones should update the remote:
+  `git remote set-url origin https://github.com/antspriggs/csp-agent-passport.git`.
+- **XDG state directory chain-migration.** `_storage.xdg_data_dir()` now
+  auto-migrates two legacy directory names — `agent-passport/` (v0.2.0,
+  never shipped on PyPI but used by local devs) and `nist-agent-passport/`
+  (v0.0.1–v0.1.x, shipped) — to the current `csp-agent-passport/`. The
+  newer legacy wins when both exist; the current dir is never clobbered.
+  Five tests in `tests/test_storage_migration.py` cover the cases.
+
+### Notes
+
+- PyPI Trusted Publisher must be re-registered for the new project name
+  before this release can publish. Owner `antspriggs`, Repository name
+  `csp-agent-passport`, Workflow filename `release.yml`, Environment `pypi`.
+
+## [0.2.0] — 2026-05-26 *(never released to PyPI — superseded by [0.2.1])*
+
+Intended breaking release: package and CLI renamed from `nist-agent-passport`
+to `agent-passport` per NIST endorsement policy. The PyPI Project Name
+`agent-passport` turned out to be unobtainable (similarity check). The rename
+mechanical work and supporting docs are preserved here for history; the
+re-rename to `csp-agent-passport` is in [0.2.1].
 
 ### Changed (breaking)
 
@@ -25,23 +63,23 @@ v0.2.0 and vice versa.
   - Python import path: `nist_agent_passport` → `agent_passport`
   - PyPI distribution: `nist-agent-passport` → `agent-passport`
   - CLI binary: `nist-agent-passport` → `agent-passport`
-  - Claim namespace URI **unchanged** at `https://agent-passport.org/claims/`
-    (was already unprefixed; wire-compatible across the rename).
+  - Claim namespace URI **unchanged** at `https://agent-passport.org/claims/`.
   - GitHub repository URL **unchanged** at
     https://github.com/antspriggs/nist-agent-passport (URL stability
-    for inbound links).
-- **XDG state directory auto-migration.** `_storage.py` now checks for a
+    for inbound links). *(Subsequently renamed in v0.2.1.)*
+- **XDG state directory auto-migration.** `_storage.py` checks for a
   legacy `$XDG_DATA_HOME/nist-agent-passport/` on first call to
   `xdg_data_dir()`; if present and the new `$XDG_DATA_HOME/agent-passport/`
   does not yet exist, the directory is renamed in place — preserving the
-  issuer signing key (so previously-issued tokens still verify) and any
-  stored ID token. No user action required.
+  issuer signing key and any stored ID token. *(Subsequently extended to
+  also migrate from `agent-passport/` in v0.2.1.)*
 
 ### Added
 
 - **`COMPARISON.md`** — honest positioning vs. ZeroID (closest
   comparable OSS), SPIFFE/SPIRE (complementary, not competing), other
-  "agent-passport" namespace projects, and commercial NHI vendors.
+  projects in the broader agent-passport namespace, and commercial NHI
+  vendors.
 - **`ROADMAP.md`** extended with candidate items from the May 2026
   standards-landscape scan: MCP authorization-spec parity (RFC 9728
   Protected Resource Metadata, RFC 7591 Dynamic Client Registration,
@@ -69,7 +107,8 @@ v0.2.0 and vice versa.
 
 - **`pyproject.toml` project URLs** were pointing at a non-existent
   `nist-agent-passport/nist-agent-passport` GitHub org; corrected to
-  `antspriggs/nist-agent-passport`. Added `Documentation`, `Changelog`,
+  `antspriggs/nist-agent-passport` (the actual repo at v0.2.0 time;
+  later renamed in v0.2.1). Added `Documentation`, `Changelog`,
   `Roadmap` URLs while there.
 
 ## [0.1.2] — 2026-05-25
@@ -128,7 +167,7 @@ hardening + SBOM validation.
   CycloneDX JSON SBOM against the resolved dependency tree of the
   just-built wheel and uploads it as a GitHub Release asset (filename:
   `nist-agent-passport-{version}.cdx.json` through v0.1.x;
-  `agent-passport-{version}.cdx.json` from v0.2.0).
+  `csp-agent-passport-{version}.cdx.json` from v0.2.1+).
 
 ## [0.1.0] — 2026-05-24
 
@@ -144,7 +183,8 @@ and OSS-readiness work since v0.0.1.
   "OAuth for the agentic era"). The new name signals the NIST 800-63-3 /
   RFC 8693 / OIDC + PKCE lineage explicitly, which is this project's
   differentiated value. (Note: this rename was itself reverted in v0.2.0
-  per NIST endorsement policy — see that entry.)
+  per NIST endorsement policy, then re-renamed to `csp-agent-passport`
+  in v0.2.1 when PyPI rejected `agent-passport` for similarity.)
   - Python import path: `agent_passport` → `nist_agent_passport`
   - PyPI package: `agent-passport` → `nist-agent-passport`
   - CLI binary: `agent-passport` → `nist-agent-passport`

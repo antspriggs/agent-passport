@@ -22,13 +22,13 @@ This project is a concrete contribution to the [NIST AI Agent Standards Initiati
 Requires Python 3.11+.
 
 ```bash
-pip install agent-passport
+pip install csp-agent-passport
 ```
 
-The install registers an `agent-passport` console script.
+The install registers an `csp-agent-passport` console script.
 
 For local development (running the test suite, editing source), see
-[CONTRIBUTING.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CONTRIBUTING.md) for the editable-install instructions.
+[CONTRIBUTING.md](https://github.com/antspriggs/csp-agent-passport/blob/main/CONTRIBUTING.md) for the editable-install instructions.
 
 ## Quickstart
 
@@ -43,8 +43,8 @@ That script boots an in-process mock OIDC provider, mints an ID token, exchanges
 For real CSP integration, copy `.env.example` to `.env`, fill in your sandbox credentials, then drive the CLI:
 
 ```bash
-agent-passport login                                                  # OAuth code + PKCE; browser opens
-agent-passport issue \
+csp-agent-passport login                                                  # OAuth code + PKCE; browser opens
+csp-agent-passport issue \
     --agent-id agent:alice \
     --agent-model claude-opus-4-7 \
     --tool-scope 'flights:*' \
@@ -52,15 +52,15 @@ agent-passport issue \
     --aud https://my-mcp-server.example.com/ \
     --ttl 900 > passport.jwt
 
-agent-passport inspect < passport.jwt                                 # decode and pretty-print
-agent-passport verify --aud https://my-mcp-server.example.com/ \
+csp-agent-passport inspect < passport.jwt                                 # decode and pretty-print
+csp-agent-passport verify --aud https://my-mcp-server.example.com/ \
     --require-ial 2 --required-scope 'flights:book' < passport.jwt
 ```
 
 To delegate further (e.g., from agent Alice to agent Bob):
 
 ```bash
-agent-passport delegate \
+csp-agent-passport delegate \
     --agent-id agent:bob \
     --agent-model claude-opus-4-7 \
     --tool-scope 'flights:book' \
@@ -68,7 +68,7 @@ agent-passport delegate \
     --ttl 300 < passport.jwt > child.jwt
 ```
 
-`agent-passport --help` lists all subcommands; each has its own `--help`.
+`csp-agent-passport --help` lists all subcommands; each has its own `--help`.
 
 ## Configure your CSP
 
@@ -89,7 +89,7 @@ For most CSPs, only `CSP_DISCOVERY_URL` and `CSP_CLIENT_ID`/`SECRET` need changi
 
 | Command | Purpose |
 |---|---|
-| `login` | OAuth Authorization Code + PKCE against the configured CSP (RFC 8252). Stores the ID token under `$XDG_DATA_HOME/agent-passport/`. `--id-token <jwt>` skips the OAuth dance for paste-in / scripted use. |
+| `login` | OAuth Authorization Code + PKCE against the configured CSP (RFC 8252). Stores the ID token under `$XDG_DATA_HOME/csp-agent-passport/`. `--id-token <jwt>` skips the OAuth dance for paste-in / scripted use. |
 | `issue` | Mint a root Passport from the stored ID token. Flags: `--agent-id`, `--agent-model`, `--tool-scope` (repeatable), `--task-purpose`, `--aud`, `--ttl` (default 900s). |
 | `verify <token>` | Verify against a policy and print the verified claims as JSON. Flags: `--aud` (required), `--require-ial`/`--require-aal`/`--require-fal`, `--required-scope`, `--issuer` (repeatable). Token from arg or stdin. |
 | `inspect <token>` | Decode (no signature check) and pretty-print every claim, including namespaced agent claims and any chained `act`. |
@@ -99,17 +99,17 @@ For most CSPs, only `CSP_DISCOVERY_URL` and `CSP_CLIENT_ID`/`SECRET` need changi
 All token args read from stdin when `-` or absent, so the commands compose:
 
 ```bash
-agent-passport issue ... | agent-passport delegate --aud ... --agent-id ...
+csp-agent-passport issue ... | csp-agent-passport delegate --aud ... --agent-id ...
 ```
 
 ## Examples
 
 | File | What it shows |
 |---|---|
-| [`examples/quickstart.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/quickstart.py) | The full loop: login → issue → verify, plus two failure-mode demos (`AudienceMismatch`, `IALInsufficient`). |
-| [`examples/multi_agent_chain.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/multi_agent_chain.py) | Alice → Bob → Carol delegation; the leaf service walks the full chain, re-checking attenuation and IAL monotonicity; prints the delegation tree. |
-| [`examples/mcp_middleware.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/mcp_middleware.py) | A `PassportMiddleware` class that wraps a tool dispatcher, enforces per-tool `required_scope`, and shows defense-in-depth refusal of overbroad and wrong-audience tokens. Drop-in pattern for MCP servers. |
-| [`examples/langchain_tool_wrapper.py`](https://github.com/antspriggs/nist-agent-passport/blob/main/examples/langchain_tool_wrapper.py) | A `PassportProtectedTool` shape-compatible with `langchain_core.tools.BaseTool`. Demonstrates scope enforcement and signature-tamper detection. |
+| [`examples/quickstart.py`](https://github.com/antspriggs/csp-agent-passport/blob/main/examples/quickstart.py) | The full loop: login → issue → verify, plus two failure-mode demos (`AudienceMismatch`, `IALInsufficient`). |
+| [`examples/multi_agent_chain.py`](https://github.com/antspriggs/csp-agent-passport/blob/main/examples/multi_agent_chain.py) | Alice → Bob → Carol delegation; the leaf service walks the full chain, re-checking attenuation and IAL monotonicity; prints the delegation tree. |
+| [`examples/mcp_middleware.py`](https://github.com/antspriggs/csp-agent-passport/blob/main/examples/mcp_middleware.py) | A `PassportMiddleware` class that wraps a tool dispatcher, enforces per-tool `required_scope`, and shows defense-in-depth refusal of overbroad and wrong-audience tokens. Drop-in pattern for MCP servers. |
+| [`examples/langchain_tool_wrapper.py`](https://github.com/antspriggs/csp-agent-passport/blob/main/examples/langchain_tool_wrapper.py) | A `PassportProtectedTool` shape-compatible with `langchain_core.tools.BaseTool`. Demonstrates scope enforcement and signature-tamper detection. |
 
 Every example runs from a clean checkout against the hermetic in-process mock OIDC provider — no external creds needed:
 
@@ -129,14 +129,14 @@ There are several adjacent open-source projects. The honest map:
 - **You need workload identity** (cryptographically attested "what runtime is this?") — look at [SPIFFE/SPIRE](https://spiffe.io/). It composes with Agent Passport, doesn't replace it.
 - **You're a security team buying a control plane** (discovery, governance, dashboards) — look at the commercial NHI vendors (Aembit, Astrix, Oasis, Token, Entro). This library deliberately doesn't compete there.
 
-See [COMPARISON.md](https://github.com/antspriggs/nist-agent-passport/blob/main/COMPARISON.md) for the full write-up, including where Agent Passport is ahead, behind, or complementary.
+See [COMPARISON.md](https://github.com/antspriggs/csp-agent-passport/blob/main/COMPARISON.md) for the full write-up, including where Agent Passport is ahead, behind, or complementary.
 
 ## Library use
 
 Three primitives compose to cover every use case:
 
 ```python
-from agent_passport import (
+from csp_agent_passport import (
     Issuer, IssuanceRequest, DelegationRequest,
     Verifier, VerificationPolicy, InMemoryKeyStore,
     IDTokenValidator, ial_acr_mapping,
@@ -169,12 +169,12 @@ Agent Passport composes existing standards rather than inventing new ones:
 ## Project layout
 
 ```
-agent-passport/
+csp-agent-passport/
 ├── pyproject.toml
 ├── README.md
 ├── CLAUDE.md                              # full design context
 ├── .env.example                           # CSP config template
-├── src/agent_passport/
+├── src/csp_agent_passport/
 │   ├── claims.py                          # Pydantic Passport / AgentClaims / ActClaim
 │   ├── issuer.py                          # Issuer, IssuanceRequest, DelegationRequest
 │   ├── verifier.py                        # Verifier, VerifiedPassport, chain walking
@@ -197,8 +197,8 @@ The project follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.h
 
 **While in `0.y.z` (alpha)** — any release MAY contain breaking changes.
 Breaking changes are flagged under `### Changed (breaking)` in
-[CHANGELOG.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CHANGELOG.md). Adopters should pin a specific version
-or version range (e.g. `agent-passport>=0.1,<0.2`).
+[CHANGELOG.md](https://github.com/antspriggs/csp-agent-passport/blob/main/CHANGELOG.md). Adopters should pin a specific version
+or version range (e.g. `csp-agent-passport>=0.1,<0.2`).
 
 **Once `1.0.0` ships:**
 
@@ -208,13 +208,13 @@ or version range (e.g. `agent-passport>=0.1,<0.2`).
   `2.0.0`, and a feature deprecated in `1.4.0` will continue to work
   (with a `DeprecationWarning`) through every `1.x` release.
 - **Security fixes** may ship as patch releases on supported versions
-  without notice; see [SECURITY.md](https://github.com/antspriggs/nist-agent-passport/blob/main/SECURITY.md) for the supported-versions
+  without notice; see [SECURITY.md](https://github.com/antspriggs/csp-agent-passport/blob/main/SECURITY.md) for the supported-versions
   table.
 - The CHANGELOG's `### Deprecated` section is the authoritative list of
   deprecated APIs and their planned removal versions.
 
-Governance: see [GOVERNANCE.md](https://github.com/antspriggs/nist-agent-passport/blob/main/GOVERNANCE.md).
-Candidate next steps: see [ROADMAP.md](https://github.com/antspriggs/nist-agent-passport/blob/main/ROADMAP.md).
+Governance: see [GOVERNANCE.md](https://github.com/antspriggs/csp-agent-passport/blob/main/GOVERNANCE.md).
+Candidate next steps: see [ROADMAP.md](https://github.com/antspriggs/csp-agent-passport/blob/main/ROADMAP.md).
 
 ## Development
 
@@ -222,14 +222,14 @@ Candidate next steps: see [ROADMAP.md](https://github.com/antspriggs/nist-agent-
 pip install -e '.[dev]'
 
 pytest                                     # full suite, hermetic
-pytest --cov=agent_passport --cov-report=term-missing
+pytest --cov=csp_agent_passport --cov-report=term-missing
 ruff check . && ruff format --check .
 mypy                                       # --strict, covers src/ + tests/
 ```
 
 The test suite is fully hermetic (the mock OIDC provider runs in-process on a random port) — no creds or network needed.
 
-See [CLAUDE.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CLAUDE.md) for the design context behind every decision in this codebase: the trust model, why each RFC is used, security guardrails, and the suggested order of work.
+See [CLAUDE.md](https://github.com/antspriggs/csp-agent-passport/blob/main/CLAUDE.md) for the design context behind every decision in this codebase: the trust model, why each RFC is used, security guardrails, and the suggested order of work.
 
 ## License
 

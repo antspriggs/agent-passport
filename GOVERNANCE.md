@@ -1,6 +1,6 @@
 # Governance
 
-This document describes how decisions are made for `agent-passport`.
+This document describes how decisions are made for `csp-agent-passport`.
 It is small on purpose: the project is small, has one maintainer, and
 deliberately keeps a narrow surface area.
 
@@ -115,4 +115,4 @@ commit, approved at deploy time.
 
 ## Versioning and deprecation
 
-See [README.md](https://github.com/antspriggs/nist-agent-passport/blob/main/README.md#versioning--deprecation-policy).
+See [README.md](https://github.com/antspriggs/csp-agent-passport/blob/main/README.md#versioning--deprecation-policy).
