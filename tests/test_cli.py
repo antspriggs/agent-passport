@@ -279,6 +279,130 @@ def test_inspect_reads_token_from_stdin(
     assert json.loads(result.stdout)["aud"] == MCP_AUDIENCE
 
 
+def test_inspect_tree_root_token_renders_principal_and_agent(
+    runner: CliRunner, cli_env: Path, mock_oidc: MockOIDCProvider
+) -> None:
+    """--tree on a root (single-hop) passport surfaces principal, IAL, agent_id,
+    and the current-hop metadata in a human-readable form (no JSON)."""
+    id_token = mock_oidc.mint_id_token(sub="user-alice", acr=ACR_IAL2, aud=CLIENT_ID)
+    runner.invoke(app, ["login", "--id-token", id_token])
+    passport = runner.invoke(
+        app,
+        [
+            "issue",
+            "--agent-id",
+            "agent:alice",
+            "--agent-model",
+            "claude-opus-4-7",
+            "--tool-scope",
+            "flights:book",
+            "--task-purpose",
+            "book SFO->JFK",
+            "--aud",
+            MCP_AUDIENCE,
+        ],
+    ).stdout.strip()
+
+    result = runner.invoke(app, ["inspect", "--tree", passport])
+
+    assert result.exit_code == 0, result.output
+    out = result.stdout
+    # Tree output is plain text, not JSON.
+    with pytest.raises(json.JSONDecodeError):
+        json.loads(out)
+    assert "Principal: user-alice" in out
+    assert "IAL=2" in out
+    assert "Agent: agent:alice" in out
+    assert "(current holder)" in out
+    assert "claude-opus-4-7" in out
+    assert "flights:book" in out
+    assert "book SFO->JFK" in out
+    assert MCP_AUDIENCE in out
+
+
+def test_inspect_tree_renders_full_delegation_chain(
+    runner: CliRunner, cli_env: Path, mock_oidc: MockOIDCProvider
+) -> None:
+    """--tree on a chained passport (alice -> bob) shows alice as original
+    delegate (root), bob as current holder (leaf), with indentation between."""
+    id_token = mock_oidc.mint_id_token(sub="user-alice", acr=ACR_IAL2, aud=CLIENT_ID)
+    runner.invoke(app, ["login", "--id-token", id_token])
+    parent = runner.invoke(
+        app,
+        [
+            "issue",
+            "--agent-id",
+            "agent:alice",
+            "--agent-model",
+            "claude-opus-4-7",
+            "--tool-scope",
+            "flights:*",
+            "--aud",
+            "https://svc-a.example.com/",
+        ],
+    ).stdout.strip()
+    child = runner.invoke(
+        app,
+        [
+            "delegate",
+            "--agent-id",
+            "agent:bob",
+            "--agent-model",
+            "claude-opus-4-7",
+            "--tool-scope",
+            "flights:book",
+            "--aud",
+            "https://svc-b.example.com/",
+            parent,
+        ],
+    ).stdout.strip()
+
+    result = runner.invoke(app, ["inspect", "--tree", child])
+
+    assert result.exit_code == 0, result.output
+    out = result.stdout
+    # Both agents present; alice marked as original delegate, bob as current.
+    alice_idx = out.find("Agent: agent:alice")
+    bob_idx = out.find("Agent: agent:bob")
+    assert alice_idx >= 0 and bob_idx >= 0
+    assert alice_idx < bob_idx, "root delegate should render above current holder"
+    assert "(original delegate)" in out
+    assert "(current holder)" in out
+    # Indentation grows from root to current: bob's line starts with more
+    # whitespace than alice's.
+    alice_line = next(line for line in out.splitlines() if "Agent: agent:alice" in line)
+    bob_line = next(line for line in out.splitlines() if "Agent: agent:bob" in line)
+    alice_lead = len(alice_line) - len(alice_line.lstrip())
+    bob_lead = len(bob_line) - len(bob_line.lstrip())
+    assert bob_lead > alice_lead, "current holder should be more indented than root"
+    # parent_jti is surfaced for the chained token.
+    assert "parent_jti:" in out
+
+
+def test_inspect_tree_tolerates_non_passport_token(runner: CliRunner) -> None:
+    """A malformed/non-Passport JWT (e.g. an OIDC ID token with no `act` claim)
+    must render a degraded tree rather than crash. Stays useful as a debug tool
+    even for tokens this library didn't mint."""
+    # Hand-craft a minimal JWT-like compact: header.payload.signature, where
+    # payload is base64url-encoded JSON with a `sub` but no `act`.
+    import base64
+
+    def _b64url(data: bytes) -> str:
+        return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+    header = _b64url(b'{"alg":"none","typ":"JWT"}')
+    payload = _b64url(b'{"sub":"some-user","aud":"https://elsewhere.example/"}')
+    sig = _b64url(b"unused")
+    token = f"{header}.{payload}.{sig}"
+
+    result = runner.invoke(app, ["inspect", "--tree", token])
+
+    assert result.exit_code == 0, result.output
+    out = result.stdout
+    assert "Principal: some-user" in out
+    assert "not an Agent Passport" in out
+
+
 # --------------------------------------------------------------------------- #
 # delegate
 # --------------------------------------------------------------------------- #

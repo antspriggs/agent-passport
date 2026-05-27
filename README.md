@@ -92,7 +92,7 @@ For most CSPs, only `CSP_DISCOVERY_URL` and `CSP_CLIENT_ID`/`SECRET` need changi
 | `login` | OAuth Authorization Code + PKCE against the configured CSP (RFC 8252). Stores the ID token under `$XDG_DATA_HOME/csp-agent-passport/`. `--id-token <jwt>` skips the OAuth dance for paste-in / scripted use. |
 | `issue` | Mint a root Passport from the stored ID token. Flags: `--agent-id`, `--agent-model`, `--tool-scope` (repeatable), `--task-purpose`, `--aud`, `--ttl` (default 900s). |
 | `verify <token>` | Verify against a policy and print the verified claims as JSON. Flags: `--aud` (required), `--require-ial`/`--require-aal`/`--require-fal`, `--required-scope`, `--issuer` (repeatable). Token from arg or stdin. |
-| `inspect <token>` | Decode (no signature check) and pretty-print every claim, including namespaced agent claims and any chained `act`. |
+| `inspect <token>` | Decode (no signature check) and pretty-print every claim, including namespaced agent claims and any chained `act`. Pass `--tree` to render the delegation chain (principal → original delegate → … → current holder) as a human-readable tree instead of JSON. |
 | `delegate <parent>` | Mint a child Passport from a parent (with attenuated scope). Flags: `--agent-id`, `--agent-model`, `--aud`, `--tool-scope` (repeatable), `--task-purpose`, `--ttl` (default 300s). |
 | `where` | Print the XDG data directory used for the ID-token store and the local issuer's signing key. |
 

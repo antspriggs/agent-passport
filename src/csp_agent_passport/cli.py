@@ -24,7 +24,7 @@ import json
 import os
 import sys
 from base64 import urlsafe_b64decode
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
 
 import typer
@@ -389,12 +389,122 @@ def verify(
 # --------------------------------------------------------------------------- #
 
 
+_NS_PREFIX = "https://agent-passport.org/claims/"
+
+
+def _walk_act_chain(act: Any) -> list[str]:
+    """Walk an RFC 8693 act chain outermost-first, returning each actor's `sub`.
+
+    Outermost `act.sub` is the current actor; nested `act.act.sub` is the actor
+    they are acting on behalf of; deepest nested `sub` is the original delegate
+    (closest to the principal). Tolerant: a missing `sub` becomes `<missing>`,
+    a non-dict nested `act` stops the walk.
+    """
+    chain: list[str] = []
+    cursor: Any = act
+    while isinstance(cursor, dict):
+        chain.append(str(cursor.get("sub", "<missing>")))
+        cursor = cursor.get("act")
+    return chain
+
+
+def _render_tree(payload: dict[str, Any]) -> str:
+    """Render a Passport's delegation chain + current-hop metadata as a tree.
+
+    Walks the RFC 8693 `act` chain root-first (deepest first = original delegate;
+    outermost = current token holder). For the current hop, surfaces the
+    namespaced agent metadata (`agent_model`, `tool_scope`, `task_purpose`)
+    plus token-level fields (`jti`, `parent_jti`, `aud`, `iat`, `exp`).
+
+    Tolerant of partial / non-Passport JWTs — missing fields are rendered as
+    `<missing>` rather than raising.
+    """
+    lines: list[str] = []
+
+    principal = payload.get("sub", "<missing>")
+    lines.append(f"Principal: {principal}")
+    assurance: list[str] = []
+    for level in ("ial", "aal", "fal"):
+        value = payload.get(level)
+        if value is not None:
+            assurance.append(f"{level.upper()}={value}")
+    if assurance:
+        lines.append(f"  [{' '.join(assurance)}]")
+
+    act = payload.get("act")
+    if not isinstance(act, dict):
+        lines.append("(no `act` claim — not an Agent Passport delegation token)")
+        return "\n".join(lines)
+
+    # Outermost-first from _walk_act_chain; reverse for root-first display.
+    outer_first = _walk_act_chain(act)
+    if not outer_first:
+        lines.append("(empty `act` chain)")
+        return "\n".join(lines)
+    root_first = list(reversed(outer_first))
+    last_index = len(root_first) - 1
+    for depth, actor_sub in enumerate(root_first):
+        indent = "    " * depth
+        label_parts: list[str] = []
+        if depth == 0 and last_index > 0:
+            label_parts.append("(original delegate)")
+        if depth == last_index:
+            label_parts.append("(current holder)")
+        label = "  " + " ".join(label_parts) if label_parts else ""
+        lines.append(f"{indent}└── Agent: {actor_sub}{label}")
+
+    # Current-hop metadata under the deepest branch.
+    detail_indent = "    " * len(root_first) + "  "
+    model = payload.get(_NS_PREFIX + "agent_model")
+    if model:
+        lines.append(f"{detail_indent}model:        {model}")
+    tool_scope = payload.get(_NS_PREFIX + "tool_scope")
+    if tool_scope:
+        rendered_scope = ", ".join(tool_scope) if isinstance(tool_scope, list) else str(tool_scope)
+        lines.append(f"{detail_indent}tool_scope:   {rendered_scope}")
+    task_purpose = payload.get(_NS_PREFIX + "task_purpose")
+    if task_purpose:
+        lines.append(f"{detail_indent}task_purpose: {task_purpose}")
+    parent_jti = payload.get(_NS_PREFIX + "parent_jti")
+    if parent_jti:
+        lines.append(f"{detail_indent}parent_jti:   {parent_jti}")
+
+    # Token-level metadata at the bottom (not part of the tree).
+    # Pad label gutter so all values column-align.
+    lines.append("")
+    footer: list[tuple[str, Any]] = [
+        ("Token jti", payload.get("jti", "<missing>")),
+        ("Issuer", payload.get("iss", "<missing>")),
+        ("Audience", payload.get("aud", "<missing>")),
+    ]
+    for ts_field, label in (("iat", "Issued at"), ("nbf", "Not before"), ("exp", "Expires")):
+        ts = payload.get(ts_field)
+        if isinstance(ts, int):
+            footer.append((label, datetime.fromtimestamp(ts, tz=UTC).isoformat()))
+    label_width = max(len(label) for label, _ in footer) + 1  # +1 for the colon
+    for label, value in footer:
+        lines.append(f"{label + ':':<{label_width + 2}}{value}")
+
+    return "\n".join(lines)
+
+
 @app.command()
 def inspect(
     token: Annotated[
         str | None,
         typer.Argument(help="Passport JWS, or `-` / omit to read from stdin."),
     ] = None,
+    tree: Annotated[
+        bool,
+        typer.Option(
+            "--tree",
+            help=(
+                "Render the delegation chain as a human-readable tree (root "
+                "delegate → current holder) with the current hop's agent "
+                "metadata. Default output is full JSON."
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Decode (no signature check) and pretty-print every claim in the token."""
     tok = _read_token_arg(token)
@@ -403,7 +513,10 @@ def inspect(
     except (ValueError, json.JSONDecodeError) as e:
         typer.secho(f"could not decode token: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1) from e
-    typer.echo(json.dumps(payload, indent=2))
+    if tree:
+        typer.echo(_render_tree(payload))
+    else:
+        typer.echo(json.dumps(payload, indent=2))
 
 
 # --------------------------------------------------------------------------- #
